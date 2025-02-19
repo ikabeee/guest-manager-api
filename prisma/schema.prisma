@@ -13,4 +13,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User{
+  id Int @id @default(autoincrement())
+  name String
+  tel String
+  mail String
+  sites Int
+  role Role
+  guest Guest[]
+}
 
+model Guest {
+  id Int @id @default(autoincrement())
+  name String
+  tel String
+  userId Int 
+  user User @relation(fields: [userId], references: [id])
+}
+
+
+
+enum Role {
+  ADMIN
+  GUEST
+}
