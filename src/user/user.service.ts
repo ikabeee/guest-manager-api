@@ -14,7 +14,7 @@ export class UserService {
   constructor(private readonly prisma: PrismaService) {}
   async create(createUserDto: CreateUserDto): Promise<User> {
     try {
-      const { name } = createUserDto;
+      const name = createUserDto.name.toLowerCase();
       const user = await this.prisma.user.findFirst({
         where: { name },
         include: {
@@ -25,7 +25,7 @@ export class UserService {
         throw new ConflictException('User already exist');
       }
       const createUser = this.prisma.user.create({
-        data: { ...createUserDto },
+        data: { ...createUserDto, name },
       });
       return createUser;
     } catch (error) {
@@ -55,9 +55,10 @@ export class UserService {
       if (!user) {
         throw new NotFoundException('User not found');
       }
+      const name = updateUserDto.name?.toLowerCase();
       const updatedUser = await this.prisma.user.update({
         where: { id },
-        data: { ...updateUserDto },
+        data: { ...updateUserDto, name },
       });
       return updatedUser;
     } catch (error) {
