@@ -69,10 +69,30 @@ export class UserService {
     }
   }
 
-  async findOne(id: number): Promise<User> {
+  async findById(id: number): Promise<User> {
     try {
       const user = await this.prisma.user.findFirst({
         where: { id },
+        include: {
+          guest: true,
+        },
+      });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+      return user;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Unexpected error');
+    }
+  }
+
+  async findOne(tel: string): Promise<User> {
+    try {
+      const user = await this.prisma.user.findFirst({
+        where: { tel: tel },
         include: {
           guest: true,
         },

@@ -14,21 +14,21 @@ export class GuestService {
   constructor(private prisma: PrismaService) {}
   async create(createGuestDto: CreateGuestDto): Promise<Guest> {
     try {
-      const name = createGuestDto.name.toLowerCase();
-      const checkGuestonguests = await this.prisma.guest.findFirst({
-        where: { name },
+      const formattedName = createGuestDto.name.toLowerCase();
+      const checkGuestOnGuest = await this.prisma.guest.findFirst({
+        where: { name: createGuestDto.name },
       });
-      const checkGuest = await this.prisma.guest.findFirst({
-        where: { name },
+      const checkGuest = await this.prisma.user.findFirst({
+        where: { name: createGuestDto.name },
       });
-      if (checkGuestonguests) {
+      if (checkGuestOnGuest) {
         throw new ConflictException('Guest already invited');
       }
-      if (!checkGuest) {
-        throw new NotFoundException('Guest already exist on the list');
+      if (checkGuest) {
+        throw new ConflictException('Guest already exist on the list');
       }
       const guest = await this.prisma.guest.create({
-        data: { ...createGuestDto, name },
+        data: { ...createGuestDto, name: formattedName },
       });
       return guest;
     } catch (error) {
@@ -44,7 +44,11 @@ export class GuestService {
 
   async findAll(): Promise<Guest[]> {
     try {
-      const guests = await this.prisma.guest.findMany();
+      const guests = await this.prisma.guest.findMany({
+        include: {
+          user: true,
+        },
+      });
       return guests;
     } catch (error) {
       throw new InternalServerErrorException('Unexpected error', error);
@@ -55,6 +59,9 @@ export class GuestService {
     try {
       const guest = await this.prisma.guest.findFirst({
         where: { id },
+        include: {
+          user: true,
+        },
       });
       if (!guest) {
         throw new NotFoundException('Guest not found');
@@ -105,6 +112,31 @@ export class GuestService {
         throw error;
       }
       throw new InternalServerErrorException('Unexpected error');
+    }
+  }
+
+  async listGuestByUser(id: number) {
+    try {
+      const listGuest = await this.prisma.guest.findMany({
+        where: {
+          userId: id,
+        },
+        select: {
+          id: true,
+          name: true,
+          tel: true,
+        },
+      });
+
+      if (!listGuest || listGuest.length === 0) {
+        throw new NotFoundException('No guests found for this user');
+      }
+      return listGuest;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Unexpected error', error);
     }
   }
 }

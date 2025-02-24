@@ -26,9 +26,14 @@ export class UserController {
     return this.userService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: string) {
-    return this.userService.findOne(+id);
+  @Get(':tel')
+  findOne(@Param('tel') tel: string) {
+    return this.userService.findOne(tel);
+  }
+
+  @Get('userById/:id')
+  findById(@Param('id', ParseIntPipe) id: string) {
+    return this.userService.findById(+id);
   }
 
   @Patch('update/:id')
@@ -39,7 +44,7 @@ export class UserController {
     return this.userService.update(+id, updateUserDto);
   }
 
-  @Delete(':delete/id')
+  @Delete('delete/:id')
   remove(@Param('id', ParseIntPipe) id: string) {
     return this.userService.remove(+id);
   }

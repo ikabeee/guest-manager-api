@@ -31,6 +31,11 @@ export class GuestController {
     return this.guestService.findOne(+id);
   }
 
+  @Get('listGuest/:id')
+  getListGuestByUser(@Param('id', ParseIntPipe) id: string) {
+    return this.guestService.listGuestByUser(+id);
+  }
+
   @Patch('update/:id')
   update(
     @Param('id', ParseIntPipe) id: string,
@@ -38,7 +43,6 @@ export class GuestController {
   ) {
     return this.guestService.update(+id, updateGuestDto);
   }
-
   @Delete('delete/:id')
   remove(@Param('id', ParseIntPipe) id: string) {
     return this.guestService.remove(+id);
