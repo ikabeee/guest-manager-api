@@ -16,7 +16,6 @@ export class GuestService {
     try {
       const formattedName = createGuestDto.name.toLowerCase();
 
-      // Revisa si el usuario existe
       const checkUserId = await this.prisma.user.findFirst({
         where: { id: createGuestDto.userId },
       });
