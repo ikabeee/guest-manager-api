@@ -15,7 +15,18 @@ export class GuestService {
   async create(createGuestDto: CreateGuestDto): Promise<Guest> {
     try {
       const formattedName = createGuestDto.name.toLowerCase();
-
+      const { userId } = createGuestDto;
+      const user = await this.prisma.user.findFirst({
+        where: { id: userId },
+        select: { sites: true },
+      });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+      const sites = user.sites;
+      const totalInvites = await this.prisma.guest.count({
+        where: { userId: createGuestDto.userId },
+      });
       const checkUserId = await this.prisma.user.findFirst({
         where: { id: createGuestDto.userId },
       });
@@ -39,14 +50,21 @@ export class GuestService {
       if (checkGuest) {
         throw new ConflictException('Guest already exist on the list');
       }
-
+      if (sites === null || totalInvites >= sites) {
+        throw new ConflictException(
+          'You have reached the maximum number of invites',
+        );
+      }
       const guest = await this.prisma.guest.create({
         data: { ...createGuestDto, name: formattedName },
       });
 
       return guest;
     } catch (error) {
-      if (error instanceof ConflictException) {
+      if (
+        error instanceof ConflictException ||
+        error instanceof NotFoundException
+      ) {
         throw error;
       }
       throw new InternalServerErrorException('Unexpected error', error);
