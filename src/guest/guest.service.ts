@@ -50,7 +50,7 @@ export class GuestService {
       if (checkGuest) {
         throw new ConflictException('Guest already exist on the list');
       }
-      if (sites === null || totalInvites >= sites) {
+      if (sites === null || totalInvites >= sites - 1) {
         throw new ConflictException(
           'You have reached the maximum number of invites',
         );
